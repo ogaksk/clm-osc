@@ -43,13 +43,13 @@ io.sockets.on("connection", function(socket) {
   /* 今ここを手術してる */
   socket.on("senddata", function(facedata, emotiondata) {
     if(fpsFlag == true) {
-      // var stmt = db.prepare('INSERT INTO facedata (name, face emotion) VALUES (?, ?, ?)');
-      // stmt.run(
-      //   recordName,
-      //   JSON.stringify(facedata),
-      //   JSON.stringify(emotiondata)
-      // );
-      // stmt.finalize();
+      var stmt = db.prepare('INSERT INTO facedata (name, face, emotion) VALUES (?, ?, ?)');
+      stmt.run(
+        recordName,
+        JSON.stringify(facedata),
+        JSON.stringify(emotiondata)
+      );
+      stmt.finalize();
     }
     fpsFlag = false;
   });
@@ -99,7 +99,7 @@ if(process.argv[2] == "fire") {
         } else {
           var faceData = JSON.parse(row.face);
           var emotionData = JSON.parse(row.emotion);
-          faceDatas.push(faceData[0], faceData[10], faceData[20]); //tameshi 
+          faceDatas.push(faceData[0]); //tameshi 
           emotionDatas.push([emotionData[0].value, emotionData[1].value, emotionData[2].value, emotionData[3].value]);
         }
       }, function (err, count) {  
@@ -119,8 +119,8 @@ if(process.argv[2] == "fire") {
     function (callback) {
       setInterval( function () {
         if(emotionDatas.length > count) {
-          oscClient1.send('/data', datas[count]);
-          oscClient2.send('/data', datas[count]);
+          oscClient1.send('/data', faceDatas[count]);
+          oscClient2.send('/data', emotionDatas[count]);
           count += 1;
         } else {
           process.exit();
