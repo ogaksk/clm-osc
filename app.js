@@ -4,7 +4,7 @@ var express = require('express')
   , http = require('http');
 var app = express();
 var osc = require('node-osc')
-  , oscClient = new osc.Client('127.0.0.1', 3002)
+  , oscClient1 = new osc.Client('127.0.0.1', 3002)
   , oscClient2 = new osc.Client('127.0.0.1', 3003);
 var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("test.db");
@@ -41,16 +41,15 @@ io.sockets.on("connection", function(socket) {
     recordName = text;
   });
   /* 今ここを手術してる */
-  socket.on("senddata", function(emotiondata) {
+  socket.on("senddata", function(facedata, emotiondata) {
     if(fpsFlag == true) {
-      // console.log(facedata);
-      // console.log(emotiondata);
-      var stmt = db.prepare('INSERT INTO facedata (name, data) VALUES (?, ?)');
-      stmt.run(
-        recordName,
-        JSON.stringify(datas)
-      );
-      stmt.finalize();
+      // var stmt = db.prepare('INSERT INTO facedata (name, face emotion) VALUES (?, ?, ?)');
+      // stmt.run(
+      //   recordName,
+      //   JSON.stringify(facedata),
+      //   JSON.stringify(emotiondata)
+      // );
+      // stmt.finalize();
     }
     fpsFlag = false;
   });
@@ -77,20 +76,20 @@ function namedIs() {
 
 if(process.argv[2] == "create") {
   db.serialize(function () {
-    db.run("CREATE TABLE facedata (id integer primary key autoincrement, name STRING, data TEXT)");
+    db.run("CREATE TABLE facedata (id integer primary key autoincrement, name STRING, face TEXT, emotion TEXT)");
     db.close();
   });
 }
 
 if(process.argv[2] == "fire") {
   var name = namedIs();
-  var datas = [];
+  var faceDatas = [];
+  var emotionDatas = [];
   var rangesY = [];
   var rangesX = [];
   var scalesY = [];
   var scalesX = [];
   var count = 0;
-  var facePoints;
 
   async.series([
     function (callback) {
@@ -98,9 +97,10 @@ if(process.argv[2] == "fire") {
         if (err) {
       
         } else {
-          var data = JSON.parse(row.data);
-          datas.push([data[0].value, data[1].value, data[2].value, data[3].value]);
-
+          var faceData = JSON.parse(row.face);
+          var emotionData = JSON.parse(row.emotion);
+          faceDatas.push(faceData[0], faceData[10], faceData[20]); //tameshi 
+          emotionDatas.push([emotionData[0].value, emotionData[1].value, emotionData[2].value, emotionData[3].value]);
         }
       }, function (err, count) {  
         if (err) {
@@ -114,12 +114,12 @@ if(process.argv[2] == "fire") {
       });
     },
     function (callback) {
-      facePoints = datas[0].length;  
       callback(null, "second");
     },
     function (callback) {
       setInterval( function () {
-        if(datas.length > count) {
+        if(emotionDatas.length > count) {
+          oscClient1.send('/data', datas[count]);
           oscClient2.send('/data', datas[count]);
           count += 1;
         } else {

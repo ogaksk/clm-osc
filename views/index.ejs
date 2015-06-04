@@ -246,7 +246,7 @@
           var er = ec.meanPredict(cp);
           if (er) {
             updateData(er);
-            socket.emit("senddata", er);
+            socket.emit("senddata", positions, er);
             for (var i = 0;i < er.length;i++) {
               if (er[i].value > 0.4) {
                 document.getElementById('icon'+(i+1)).style.visibility = 'visible';
