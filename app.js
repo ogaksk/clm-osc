@@ -40,7 +40,7 @@ io.sockets.on("connection", function(socket) {
     console.log("name: " + text);
     recordName = text;
   });
-  /* 今ここを手術してる */
+  
   socket.on("senddata", function(facedata, emotiondata) {
     if(fpsFlag == true) {
       var stmt = db.prepare('INSERT INTO facedata (name, face, emotion) VALUES (?, ?, ?)');
