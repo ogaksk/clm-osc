@@ -66,7 +66,6 @@
         // var name = prompt("名前を入れてください:");
         var socket = io.connect();
         var socketFlag = false;
-
         var emotionSums = [0.0, 0.0, 0.0, 0.0];
 
         socket.on("connect", function() {
@@ -157,7 +156,6 @@
 
         vid.addEventListener('canplay', enablestart, false);
         
-
         vid.addEventListener('ended', function() {
           ctrack.stop(vid);
           socketFlag = false;
@@ -218,6 +216,11 @@
           }, stopTime);
         }
 
+        /*--------------------init emotion store class-------------------*/
+        var pastHappy = new Past(function () {
+          return vid.currentTime
+        });
+
         
         /*********** setup of emotion detection *************/
 
@@ -250,8 +253,9 @@
             updateData(er);
             circleUpdate(parseData(er));
 
+          console.log(pastHappy.run(er[3].value));
 
-            
+
             /*------------socket emit----------------*/
             //
             // CHECK: 今きってます！！！！！
@@ -551,27 +555,30 @@
           return vars;
         }
 
-        function Past () {
+        function Past (callback) {
           var flag = false;
+          var start_val;
 
           return {
             run: function (val) {
               if (val > 0.4) {
                 if (!flag) {
                   flag = true;
-                  return "start"
+                  start_val = callback.apply();
+                  // return "start"
                 }
               }
           
               if (val < 0.4) {
                 if (flag) {
                   flag = false;
-                  return "end"
+                  return [start_val, callback.apply()]
+                  // return "end"
                 }
               }
             },
             show: function () {
-              return flag
+              return start_val;
             }
           }
         }
