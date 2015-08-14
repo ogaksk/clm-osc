@@ -132,18 +132,18 @@ if(process.argv[2] == "capture") {
     });
 
     socket.on("senddata", function(tag, data) {
-      if(fpsFlag == true) {
-        var stmt = db.prepare('INSERT INTO facedata (session_name, tag, start_time, end_time, score) VALUES (?, ?, ?, ?, ?)');
-        stmt.run(
-          recordName,
-          tag,
-          data[0],
-          data[1],
-          data[2]
-        );
-        stmt.finalize();
-      }
-      fpsFlag = false;
+      // if(fpsFlag == true) {
+      var stmt = db.prepare('INSERT INTO facedata (session_name, tag, start_time, end_time, score) VALUES (?, ?, ?, ?, ?)');
+      stmt.run(
+        recordName,
+        tag,
+        data[0],
+        data[1],
+        data[2]
+      );
+      stmt.finalize();
+      // }
+      // fpsFlag = false;
     });
   });
 
