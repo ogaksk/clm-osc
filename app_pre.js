@@ -5,8 +5,7 @@ var express = require('express')
 var app = express();
 var osc = require('node-osc')
   , oscClient1 = new osc.Client('127.0.0.1', 3002)
-  // , oscClient2 = new osc.Client('127.0.0.1', 3003);
-  , oscClient2 = new osc.Client('192.168.217.135', 3003);
+  , oscClient2 = new osc.Client('127.0.0.1', 3003);
 var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("test.db");
 var d3 = require("d3");
@@ -64,15 +63,6 @@ function degreeO(upY, downY, absupY, absdownY) {
   return (upY - downY) / (absdownY - absupY)
 }
 
-function degreeWink(upY, downY) {
-  return upY
-  // return (upY / downY)
-}
-
-function degreeFaceMove(upY, downY) {
-  // return upY
-  return (upY / downY)
-}
 
 /*
 // server console process
@@ -82,12 +72,6 @@ if(process.argv[2] == "nocapture") {
     console.log("connect..");
     var recordName;
 
-
-    socket.on("startflag", function() {
-      oscClient2.send('/control', 1);
-      
-    });
-
     socket.on("name", function(text) {
       console.log("name: " + text);
       recordName = text;
@@ -95,21 +79,17 @@ if(process.argv[2] == "nocapture") {
 
     socket.on("senddata", function(facedata, emotiondata) {
       if(fpsFlag == true) {
-        //
-        // CHECK: 今きってます！！！！！
-        //
-        // oscClient2.send('/data', [emotiondata[0].value, emotiondata[1].value, emotiondata[2].value, emotiondata[3].value]);
+        oscClient2.send('/data', [emotiondata[0].value, emotiondata[1].value, emotiondata[2].value, emotiondata[3].value]);
         // if(facedata){
-        //   oscClient2.send('/essence', [
-        // //   // 44 60 50 57
-        // //   degreeA(facedata[44][0], facedata[44][1], 
-        // //     facedata[60][0], facedata[60][1], 
-        // //     facedata[50][0], facedata[50][1], 
-        // //     facedata[57][0], facedata[57][1]
-        // //     ),
-        // //   degreeI(facedata[44][0], facedata[50][0], facedata[2][0], facedata[12][0]),
-        //    degreeWink(facedata[29][1], facedata[31][1]),
-        //    degreeFaceMove(facedata[2][0], facedata[12][0])
+        //   oscClient2.send('/formant', [
+        //   // 44 60 50 57
+        //   degreeA(facedata[44][0], facedata[44][1], 
+        //     facedata[60][0], facedata[60][1], 
+        //     facedata[50][0], facedata[50][1], 
+        //     facedata[57][0], facedata[57][1]
+        //     ),
+        //   degreeI(facedata[44][0], facedata[50][0], facedata[2][0], facedata[12][0]),
+        //   degreeO(facedata[60][1], facedata[57][1], facedata[33][1], facedata[7][1]),
         //   ]);
         // }
       }

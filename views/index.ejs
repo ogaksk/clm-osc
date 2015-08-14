@@ -33,35 +33,44 @@
 
 
     <div id="content">
-      <button id="socketFlag">off</button>
-      
-      <div id="controls">
-        <input class="btn" type="button" value="wait, loading video" disabled="disabled" onclick="startVideo()" id="startbutton"></input>
-      </div>
-
-
-      <div id="emotion_container">
-        <div id="emotion_icons">
-          <img class="emotion_icon" id="icon1" src="./media/icon_angry.png">
-          <img class="emotion_icon" id="icon2" src="./media/icon_sad.png">
-          <img class="emotion_icon" id="icon3" src="./media/icon_surprised.png">
-          <img class="emotion_icon" id="icon4" src="./media/icon_happy.png">
-        </div>
-        <div id='emotion_chart'></div>
-      </div>
 
       <div id="container">
-        <video id="videoel" width="400" height="300" preload="auto" loop></video>
+        <video id="videoel" width="400" height="300" preload="auto" ></video>
         <canvas id="overlay" width="400" height="300"></canvas>
       </div>
 
+      <div id="light-container">
+      </div>
+      <div id="left-container">
+        <div id="socketFlag">off</div>
+        
+        <div id="controls">
+          <div class="btn" type="button" value="wait, loading video" disabled="disabled" onclick="startVideo()" id="startbutton"></div>
+        </div>
+        <div id="emotion_container">
+          <div id="emotion_icons">
+            <img class="emotion_icon" id="icon1" src="./media/icon_angry.png">
+            <img class="emotion_icon" id="icon2" src="./media/icon_sad.png">
+            <img class="emotion_icon" id="icon3" src="./media/icon_surprised.png">
+            <img class="emotion_icon" id="icon4" src="./media/icon_happy.png">
+          </div>
+          <div id='emotion_chart'></div>
+        </div>
+      </div>
+
+ 
+
+    
+
       <script>
-        var name = prompt("名前を入れてください:");
+        // var name = prompt("名前を入れてください:");
         var socket = io.connect();
         var socketFlag = false;
 
+        var emotionSums = [0.0, 0.0, 0.0, 0.0];
+
         socket.on("connect", function() {
-          socket.emit("name", name);
+          socket.emit("name", "undefined!");
           // socket.emit("message", massage); // 初期メッセージ
         });
 
@@ -85,20 +94,33 @@
           startbutton.value = "start";
           startbutton.disabled = null;
         }
+
+        function reserveSrc() {
+           if(getUrlVars()[0] == "movie2") {
+            cueing_at_movie2(6000, 7000);
+            cueing_at_movie2(41000, 8000);
+            cueing_at_movie2(75000, 10000);
+            cueing_at_movie2(114000, 3000);
+            return "/media/nakamura_fix2.m4v";
+          } else {
+            return "/media/nakamura_fix1.m4v";
+          }
+        }
         
-        /*var insertAltVideo = function(video) {
+        var insertAltVideo = function(video) {
           if (supports_video()) {
             if (supports_ogg_theora_video()) {
-              video.src = "../media/cap12_edit.ogv";
+              video.src = reserveSrc();
             } else if (supports_h264_baseline_video()) {
-              video.src = "../media/cap12_edit.mp4";
+              video.src = reserveSrc();
             } else {
               return false;
             }
             //video.play();
             return true;
           } else return false;
-        }*/
+        }
+
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
         window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
 
@@ -122,15 +144,80 @@
             }
             vid.play(); 
           }, function() {
-            //insertAltVideo(vid);
-            alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
+            insertAltVideo(vid);
+            // alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
           });
         } else {
           //insertAltVideo(vid);
-          alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
+          // alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
         }
 
+
+        /*********** event listner function *************/
+
         vid.addEventListener('canplay', enablestart, false);
+        
+
+        vid.addEventListener('ended', function() {
+          ctrack.stop(vid);
+          socketFlag = false;
+          console.log("resstart");
+
+          if(getUrlVars()[0] == "movie2") {
+            location.href = "http://localhost:3000"
+          } else {
+            location.href = "http://localhost:3000?movie2"
+          }
+          
+
+
+          /*
+          if(vid.src == "http://localhost:3000/media/nakamura1.mov") {
+            vid.src = "http://localhost:3000/media/nakamura9.m4v";
+          } else {
+            location.href = "http://localhost:3000"
+            // vid.src == "http://localhost:3000/media/nakamura1.mov";
+          }
+          */
+
+          setTimeout( function() { 
+            vid.play();
+            setTimeout( function() { 
+              socket.emit("startflag");
+            }, 2000);
+          }, 4000);
+          
+          emotionSums = [0.0, 0.0, 0.0, 0.0];
+        }, false);
+
+        document.onkeydown = function (e){
+          if(e.keyCode == 83) {
+            document.getElementById('startbutton').onclick();
+          }
+          if(e.keyCode == 69) {
+            document.getElementById('socketFlag').click();
+          }
+          if(e.keyCode == 80) {
+            ctrack.stop(vid);
+          }
+          if(e.keyCode == 79) {
+            ctrack.start(vid);
+          }
+        };
+
+        /*------------ special cueing function super mad -----------*/
+
+        function cueing_at_movie2(stopTime, startTime) {
+          setTimeout(function() {
+            console.log("stopt!")
+            ctrack.stop(vid);
+            setTimeout(function() {
+              console.log("restart")
+              ctrack.start(vid);
+            }, startTime);
+          }, stopTime);
+        }
+
         
         /*********** setup of emotion detection *************/
 
@@ -138,6 +225,8 @@
         ctrack.init(pModel);
 
         function startVideo() {
+          console.log("start");
+          socket.emit("startflag");
           // start video
           vid.play();
           // start tracking
@@ -160,17 +249,23 @@
           if (er) {
             updateData(er);
             
+
+            circleUpdate(parseData(er));
+            
             /*------------socket emit----------------*/
-            if (socketFlag) {
-              socket.emit("senddata", positions, er);
-            }
-            for (var i = 0;i < er.length;i++) {
-              if (er[i].value > 0.4) {
-                document.getElementById('icon'+(i+1)).style.visibility = 'visible';
-              } else {
-                document.getElementById('icon'+(i+1)).style.visibility = 'hidden';
-              }
-            }
+            //
+            // CHECK: 今きってます！！！！！
+            //
+            // if (socketFlag) {
+            //   socket.emit("senddata", positions, er);
+            // }
+            // for (var i = 0;i < er.length;i++) {
+            //   if (er[i].value > 0.4) {
+            //     document.getElementById('icon'+(i+1)).style.visibility = 'visible';
+            //   } else {
+            //     document.getElementById('icon'+(i+1)).style.visibility = 'hidden';
+            //   }
+            // }
           }
         }
         
@@ -180,34 +275,24 @@
         
         /************ d3 code for barchart *****************/
 
-        var margin = {top : 20, right : 20, bottom : 10, left : 0},
-          width = 100 - margin.left - margin.right,
-          height = 400 - margin.top - margin.bottom;
+        var margin = {top : 20, right : 20, bottom : 0, left : 40},
+          width = 400 - margin.left - margin.right,
+          height = 350 - margin.top - margin.bottom;
 
         var barWidth = 40;
 
         var formatPercent = d3.format(".0%");
         
-        // domainが数, rangeが値の範囲
-        // 4つのパラメータだが、ひとつのグラフとして表現するぽい
         var x = d3.scale.linear()
-          .domain([0,1]).range([0, height]);
-
-        var y = d3.scale.linear()
           .domain([0, ec.getEmotions().length]).range([margin.left, width+margin.left]);
 
-        // d3はselectでエレメントをgetできるらしい、それにsvgというelementをたす
+        var y = d3.scale.linear()
+          .domain([0,1]).range([0, height]);
+
         var svg = d3.select("#emotion_chart").append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
         
-        // selectAll()するとinitした全ての属性を握れるっぽい
-        // data()でデータをセットできる、あらかじめ用意したデータ形式を
-        // enter()でトリガーするのかな
-        // そのあとsvg:rectというものを追加して
-        // attrで値を変更する、callback形式でsvgからの値を引き出しているように見える
-        // yはheightから yの値を引いたものとしている
-        // そのほかheightとwidthをそれぞれattrを設定している
         svg.selectAll("rect").
           data(emotionData).
           enter().
@@ -216,10 +301,10 @@
           attr("y", function(datum) { return height - y(datum.value); }).
           attr("height", function(datum) { return y(datum.value); }).
           attr("width", barWidth).
-          attr("fill", "#2d578b");
+          // attr("fill", "#FF8C00");
+          attr("fill", function(datum, index) { return ["#ff3399", "#3399ff", "#33ff99", "#ffff0f"][index]; });
 
-        // こちらは値の数値を表示しているところかな
-        // dxはバーの長さの半分、dyは1.2emってなんのことなんだろう
+
         svg.selectAll("text.labels").
           data(emotionData).
           enter().
@@ -233,7 +318,6 @@
           attr("fill", "white").
           attr("class", "labels");
         
-        // ここはよく分からない
         svg.selectAll("text.yAxis").
           data(emotionData).
           enter().append("svg:text").
@@ -241,7 +325,9 @@
           attr("y", height).
           attr("dx", -barWidth/2).
           attr("text-anchor", "middle").
-          attr("style", "font-size: 12").
+          attr("style", "font-size: 42").
+          attr("style", "font-weight: lighter").
+          attr("fill", "white").
           text(function(datum) { return datum.emotion;}).
           attr("transform", "translate(0, 18)").
           attr("class", "yAxis");
@@ -266,6 +352,165 @@
           texts.exit().remove();
         }
 
+
+        /******** D3 circle charts *********/
+        var circleSvg = d3.select("#light-container")
+          .append("svg")
+          .attr("width", 600)
+          .attr("height",350)
+          .append("g")
+   
+        circleSvg.append("g")
+          .attr("class", "slices");
+        circleSvg.append("g")
+          .attr("class", "labels");
+        circleSvg.append("g")
+          .attr("class", "lines");
+
+        var circleWidth = 600,
+            circleHeight = 350,
+          circleRadius = Math.min(circleWidth, circleHeight) / 2;
+
+        var circlePie = d3.layout.pie()
+          .sort(null)
+          .value(function(d) {
+            return d.value;
+          });
+
+        var circleArc = d3.svg.arc()
+          .outerRadius(circleRadius * 0.9)
+          .innerRadius(circleRadius * 0.4);
+
+        var circleOuterArc = d3.svg.arc()
+          .innerRadius(circleRadius * 0.9)
+          .outerRadius(circleRadius * 0.9);
+
+        circleSvg.attr("transform", "translate(" + circleWidth / 2 + "," + circleHeight / 2 + ")");
+
+        var circleKey = function(d){ return d.data.label; };
+
+        var cicleColor = d3.scale.ordinal()
+          .domain(["Angry", "Sad", "Surprised", "Happy"])
+          .range(["#ff3399", "#3399ff", "#33ff99", "#ffff0f"]);
+
+        function randomData (){
+          var labels = cicleColor.domain();
+          return labels.map(function(label){
+            return { label: label, value: Math.random() }
+          });
+        }
+
+        function parseData (datas){
+          var labels = cicleColor.domain();
+          return labels.map(function(label, index){
+            emotionSums[index] += datas[index].value;  // cHeck:  increment!!
+            return { label: label, value: emotionSums[index] }
+          });
+        }
+
+
+        d3.select(".randomize")
+          .on("click", function(){
+            circleUpdate(randomData());
+          });
+
+
+        function circleUpdate(data) {
+
+          /* ------- PIE SLICES -------*/
+          var slice = circleSvg.select(".slices").selectAll("path.slice")
+            .data(circlePie(data), circleKey);
+
+          slice.enter()
+            .insert("path")
+            .style("fill", function(d) { return cicleColor(d.data.label); })
+            .attr("class", "slice");
+
+          slice   
+            .transition().duration(33)
+            .attrTween("d", function(d) {
+              this._current = this._current || d;
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                return circleArc(interpolate(t));
+              };
+            })
+
+          slice.exit()
+            .remove();
+
+          /* ------- TEXT LABELS -------*/
+
+          var text = circleSvg.select(".labels").selectAll("text")
+            .data(circlePie(data), circleKey);
+
+          text.enter()
+            .append("text")
+            .attr("dy", ".35em")
+            .attr("fill", "white")
+            .text(function(d) {
+              return d.data.label;
+            });
+          
+          function midAngle(d){
+            return d.startAngle + (d.endAngle - d.startAngle)/2;
+          }
+
+          text.transition().duration(33)
+            .attrTween("transform", function(d) {
+              this._current = this._current || d;
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                var d2 = interpolate(t);
+                var pos = circleOuterArc.centroid(d2);
+                pos[0] = circleRadius * (midAngle(d2) < Math.PI ? 1 : -1);
+                return "translate("+ pos +")";
+              };
+            })
+            .styleTween("text-anchor", function(d){
+              this._current = this._current || d;
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                var d2 = interpolate(t);
+                return midAngle(d2) < Math.PI ? "start":"end";
+              };
+            });
+
+          text.exit()
+            .remove();
+
+          /* ------- SLICE TO TEXT POLYLINES -------*/
+
+          var polyline = circleSvg.select(".lines").selectAll("polyline")
+            .data(circlePie(data), circleKey);
+          
+          polyline.enter()
+            .append("polyline");
+          polyline.attr("fill", "none")
+            .attr("stroke", "white")
+            .attr("stroke-width", "0.5");
+
+          polyline.transition().duration(33)
+            .attrTween("points", function(d){
+              this._current = this._current || d;
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                var d2 = interpolate(t);
+                var pos = circleOuterArc.centroid(d2);
+                pos[0] = circleRadius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
+                return [circleArc.centroid(d2), circleOuterArc.centroid(d2), pos];
+              };      
+            });
+          
+          polyline.exit()
+            .remove();
+        };
+
+
         /******** stats ********/
 
         stats = new Stats();
@@ -277,6 +522,35 @@
         document.addEventListener('clmtrackrIteration', function(event) {
           stats.update();
         }, false);
+
+        window.onload = function() {
+          setTimeout( function() { 
+            document.getElementById('startbutton').onclick();
+
+            document.getElementById('socketFlag').click()
+          }, 4000);
+
+        }
+
+        /*******   utils  *******/ 
+
+        var val = getUrlVars();
+
+
+        function getUrlVars() {
+          var vars = [], max = 0, hash = "", array = "";
+          var url = window.location.search;
+
+              //?を取り除くため、1から始める。複数のクエリ文字列に対応するため、&で区切る
+          hash  = url.slice(1).split('&');    
+          max = hash.length;
+          for (var i = 0; i < max; i++) {
+              array = hash[i].split('=');    //keyと値に分割。
+              vars.push(array[0]);    //末尾にクエリ文字列のkeyを挿入。
+              vars[array[0]] = array[1];    //先ほど確保したkeyに、値を代入。
+          }
+          return vars;
+        }
         
       </script>
     </div>
