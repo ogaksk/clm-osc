@@ -558,11 +558,17 @@
         function Past (callback) {
           var flag = false;
           var start_val;
+          var score_sum;
+          var count;
 
           return {
             run: function (val) {
               if (val > 0.4) {
+              score_sum += val;
+              count += 1;
                 if (!flag) {
+                  score_sum = 0;
+                  count = 0;
                   flag = true;
                   start_val = callback.apply();
                   // return "start"
@@ -572,10 +578,12 @@
               if (val < 0.4) {
                 if (flag) {
                   flag = false;
-                  return [start_val, callback.apply()]
+                  return [start_val, callback.apply(), (score_sum / count)]
                   // return "end"
                 }
               }
+
+              return
             },
             show: function () {
               return start_val;
