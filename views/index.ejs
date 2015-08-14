@@ -583,7 +583,10 @@
               if (val < 0.4) {
                 if (flag) {
                   flag = false;
-                  return [start_val, callback.apply(), (score_sum / count)]
+                  if (count == 0) {
+                    count = 1;
+                  }
+                  return [start_val, callback.apply(), (score_sum / count), count]
                   // return "end"
                 }
               }
