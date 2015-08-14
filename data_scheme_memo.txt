@@ -1,0 +1,7 @@
+facedata: 
+  id         : INTEGER (auto incr) 
+  tag        : TEXT # happy, sad
+  start_time : REAL 
+  end_time   : REAL 
+  score      : REAL 
+

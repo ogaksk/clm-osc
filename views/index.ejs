@@ -248,9 +248,9 @@
           var er = ec.meanPredict(cp);
           if (er) {
             updateData(er);
-            
-
             circleUpdate(parseData(er));
+
+
             
             /*------------socket emit----------------*/
             //
@@ -536,7 +536,6 @@
 
         var val = getUrlVars();
 
-
         function getUrlVars() {
           var vars = [], max = 0, hash = "", array = "";
           var url = window.location.search;
@@ -550,6 +549,31 @@
               vars[array[0]] = array[1];    //先ほど確保したkeyに、値を代入。
           }
           return vars;
+        }
+
+        function Past () {
+          var flag = false;
+
+          return {
+            run: function (val) {
+              if (val > 0.4) {
+                if (!flag) {
+                  flag = true;
+                  return "start"
+                }
+              }
+          
+              if (val < 0.4) {
+                if (flag) {
+                  flag = false;
+                  return "end"
+                }
+              }
+            },
+            show: function () {
+              return flag
+            }
+          }
         }
         
       </script>
