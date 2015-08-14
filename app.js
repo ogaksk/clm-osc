@@ -131,13 +131,15 @@ if(process.argv[2] == "capture") {
       recordName = text;
     });
 
-    socket.on("senddata", function(facedata, emotiondata) {
+    socket.on("senddata", function(tag, data) {
       if(fpsFlag == true) {
-        var stmt = db.prepare('INSERT INTO facedata (name, face, emotion) VALUES (?, ?, ?)');
+        var stmt = db.prepare('INSERT INTO facedata (session_name, tag, start_time, end_time, score) VALUES (?, ?, ?, ?, ?)');
         stmt.run(
           recordName,
-          JSON.stringify(facedata),
-          JSON.stringify(emotiondata)
+          tag,
+          data[0],
+          data[1],
+          data[2]
         );
         stmt.finalize();
       }
@@ -150,7 +152,7 @@ if(process.argv[2] == "capture") {
 
 if(process.argv[2] == "create") {
   db.serialize(function () {
-    db.run("CREATE TABLE facedata (id integer primary key autoincrement, name STRING, face TEXT, emotion TEXT)");
+    db.run("CREATE TABLE facedata (id integer primary key autoincrement, session_name STRING, tag STRING, start_time REAL, end_time REAL, score REAL)");
     db.close();
   });
 }

@@ -63,13 +63,13 @@
     
 
       <script>
-        // var name = prompt("名前を入れてください:");
+        var name = prompt("名前を入れてください:");
         var socket = io.connect();
         var socketFlag = false;
         var emotionSums = [0.0, 0.0, 0.0, 0.0];
 
         socket.on("connect", function() {
-          socket.emit("name", "undefined!");
+          socket.emit("name", name);
           // socket.emit("message", massage); // 初期メッセージ
         });
 
@@ -253,7 +253,12 @@
             updateData(er);
             circleUpdate(parseData(er));
 
-          console.log(pastHappy.run(er[3].value));
+          var hapy_state = pastHappy.run(er[3].value);
+          if (hapy_state !=undefined) {
+            // console.log(hapy_state);
+            socket.emit("senddata", "happy", hapy_state);
+          }
+          
 
 
             /*------------socket emit----------------*/

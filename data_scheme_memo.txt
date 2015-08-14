@@ -1,7 +1,8 @@
 facedata: 
-  id         : INTEGER (auto incr) 
-  tag        : TEXT # happy, sad
-  start_time : REAL 
-  end_time   : REAL 
-  score      : REAL 
+  id           : INTEGER (auto incr)
+  session_name : TEXT
+  tag          : TEXT # happy, sad
+  start_time   : REAL 
+  end_time     : REAL 
+  score        : REAL 
 
