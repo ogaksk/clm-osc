@@ -11,6 +11,7 @@ var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("test.db");
 var d3 = require("d3");
 var async = require('async');
+var ffmpeg = require('fluent-ffmpeg');
 
 
 app.set('port', process.env.PORT || 3000);
@@ -69,9 +70,30 @@ function degreeWink(upY, downY) {
   // return (upY / downY)
 }
 
-function degreeFaceMove(upY, downY) {
+function degreeFaceMove (upY, downY) {
   // return upY
   return (upY / downY)
+}
+
+function parseMinSec (_val) {
+  var val = parseFloat(_val);
+  var min = Math.floor(val / 60);
+  var sec = (val % 60)
+  return  min + ":" + sec;
+}
+
+function ffmpegCutUp (path, outName, startTIime, endTime) {
+  ffmpeg(path)
+  .seekInput(parseMinSec(startTIime))
+  .output(outName)
+  .duration(parseMinSec(endTime - startTIime))
+  .on('error', function(err) {
+    console.log('An error occurred: ' + err.message);
+  })
+  .on('end', function() {
+    console.log('Processing finished !');
+  })
+  .run();
 }
 
 /*
@@ -145,10 +167,10 @@ if(process.argv[2] == "capture") {
       // }
       // fpsFlag = false;
     });
-  });
 
-  socket.on("processing", function() {
-    // TODO: ffmpeg process
+    socket.on("processing", function() {
+      // TODO: ffmpeg process
+    });
   });
 
   server.listen(3000);
@@ -159,4 +181,44 @@ if(process.argv[2] == "create") {
     db.run("CREATE TABLE facedata (id integer primary key autoincrement, session_name STRING, tag STRING, start_time REAL, end_time REAL, score REAL)");
     db.close();
   });
+}
+
+
+if(process.argv[2] == "processing") {
+  var faceDatas = [];
+  async.series([
+    function (callback) {
+      // TODO: sort
+      
+      db.each("SELECT * FROM facedata where session_name = '"+ process.argv[3] + "' order by score asc", function (err, row) {
+        if (err) {
+
+        } else {
+
+          // console.log(row);
+          faceDatas.push(row);
+        }
+      }, function (err, count) {  
+        if (err) {
+        } else {
+          if (count == 0) {
+              
+          } else {
+            callback(null, "first");       
+          }
+        }
+      });
+    },
+    function (callback) {
+      console.log(faceDatas[0].score);
+
+      callback(null, "second");
+    }
+  ], function (err, results) {
+    if (err) {
+        throw err;
+    }
+    console.log('series all done. ' + results);
+  });  
+
 }
