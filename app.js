@@ -147,6 +147,10 @@ if(process.argv[2] == "capture") {
     });
   });
 
+  socket.on("processing", function() {
+    // TODO: ffmpeg process
+  });
+
   server.listen(3000);
 }
 

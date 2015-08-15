@@ -14,7 +14,8 @@
     "moment": "*", 
     "d3" : "*",
     "async" : "*",
-    "socket.io" : "*"
+    "socket.io" : "*",
+    "fluent-ffmpeg" : "*"
   },
   "author": "",
   "license": "ISC"
