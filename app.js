@@ -82,10 +82,10 @@ function parseMinSec (_val) {
   return  min + ":" + sec;
 }
 
-function ffmpegCutUp (path, outName, startTIime, endTime) {
+function ffmpegCutUp (path, outName, codec, startTIime, endTime) {
   ffmpeg(path)
   .seekInput(parseMinSec(startTIime))
-  .output(outName)
+  .output(outName+"."+codec)
   .duration(parseMinSec(endTime - startTIime))
   .on('error', function(err) {
     console.log('An error occurred: ' + err.message);
@@ -94,6 +94,22 @@ function ffmpegCutUp (path, outName, startTIime, endTime) {
     console.log('Processing finished !');
   })
   .run();
+}
+
+function ffmpegConcat (path, length, codec) {
+  var res =  ffmpeg("0."+codec);
+
+  for (var i = 0; i < length; i++) {
+    res.input(i+"."+codec)
+  }
+  
+  res.on('error', function(err) {
+    console.log('An error occurred: ' + err.message);
+  })
+  .on('end', function() {
+    console.log('Merging finished !');
+  })
+  .mergeToFile('merged.'+codec, path);
 }
 
 /*
@@ -210,7 +226,31 @@ if(process.argv[2] == "processing") {
       });
     },
     function (callback) {
-      console.log(faceDatas[0].score);
+      // console.log(faceDatas.length);
+
+      var q = async.queue(function (task, done) {
+        task.run();
+        done();
+      }, 5);
+
+      q.drain = function () {
+        console.log('task is completed');
+      }
+
+      for (var i = 0; i < faceDatas.length; i ++ ) {
+        q.push({
+          index: i, 
+          facedata: faceDatas[i],
+          run: runFunc
+          }, function (err) {
+          if (err) console.error(er);
+        });
+      }
+      
+      function runFunc() {
+        var self = this;
+          ffmpegCutUp("public/media/nakamura_fix1.m4v", self.index, "m4v", self.facedata.start_time, self.facedata.end_time);    
+      }
 
       callback(null, "second");
     }
