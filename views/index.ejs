@@ -102,7 +102,7 @@
             cueing_at_movie2(114000, 3000);
             return "/media/nakamura_fix2.m4v";
           } else {
-            return "/media/shakeit.mp4";
+            return "/media/no.mp4";
           }
         }
         
@@ -199,6 +199,11 @@
             ctrack.stop(vid);
           }
           if(e.keyCode == 79) {
+            ctrack.start(vid);
+          }
+          if(e.keyCode == 32) {
+            ctrack.reset();
+            ctrack.stop(vid);
             ctrack.start(vid);
           }
         };

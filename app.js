@@ -161,29 +161,6 @@ if(process.argv[2] == "nocapture") {
       console.log("name: " + text);
       recordName = text;
     });
-
-    socket.on("senddata", function(facedata, emotiondata) {
-      if(fpsFlag == true) {
-        //
-        // CHECK: 今きってます！！！！！
-        //
-        // oscClient2.send('/data', [emotiondata[0].value, emotiondata[1].value, emotiondata[2].value, emotiondata[3].value]);
-        // if(facedata){
-        //   oscClient2.send('/essence', [
-        // //   // 44 60 50 57
-        // //   degreeA(facedata[44][0], facedata[44][1], 
-        // //     facedata[60][0], facedata[60][1], 
-        // //     facedata[50][0], facedata[50][1], 
-        // //     facedata[57][0], facedata[57][1]
-        // //     ),
-        // //   degreeI(facedata[44][0], facedata[50][0], facedata[2][0], facedata[12][0]),
-        //    degreeWink(facedata[29][1], facedata[31][1]),
-        //    degreeFaceMove(facedata[2][0], facedata[12][0])
-        //   ]);
-        // }
-      }
-      fpsFlag = false;
-    });
   });
 
   server.listen(3000);
@@ -281,7 +258,7 @@ if(process.argv[2] == "processing") {
       
       function runFunc() {
         var self = this;
-          ffmpegCutUp("public/media/shakeit.mp4", self.index, "mp4", self.facedata.start_time, self.facedata.end_time);    
+          ffmpegCutUp("public/media/no.mp4", self.index, "mp4", self.facedata.start_time, self.facedata.end_time);    
       }
     }, 
     function (callback) { 
@@ -297,7 +274,7 @@ if(process.argv[2] == "processing") {
 }
 
 if(process.argv[2] == "merge") {
-  ffmpegConcat(81, "mp4");
+  ffmpegConcat(33, "mp4");
 
   // testMerge()
   // ffmpegConcatByFilterConplex()
