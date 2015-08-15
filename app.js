@@ -98,9 +98,9 @@ function ffmpegCutUp (path, outName, codec, startTIime, endTime) {
 
 /*grobal params .. mergeCount :int */
 function ffmpegConcat (length, codec) {
-  var res =  ffmpeg("10."+codec);
+  var res =  ffmpeg("0."+codec);
 
-  for (var i = 11; i < length; i++) {
+  for (var i = 1; i < length; i++) {
     res.input(i+"."+codec)
   }
   res.on('error', function(err) {
@@ -109,7 +109,7 @@ function ffmpegConcat (length, codec) {
   .on('end', function() {
     console.log('Merging finished !');
   })
-  .mergeToFile('merged.m4v');
+  .mergeToFile('merged.mp4');
 }
 
 function testMerge() {
@@ -281,7 +281,7 @@ if(process.argv[2] == "processing") {
       
       function runFunc() {
         var self = this;
-          ffmpegCutUp("public/media/nakamura_fix1.m4v", self.index, "m4v", self.facedata.start_time, self.facedata.end_time);    
+          ffmpegCutUp("public/media/shakeit.mp4", self.index, "mp4", self.facedata.start_time, self.facedata.end_time);    
       }
     }, 
     function (callback) { 
@@ -297,7 +297,7 @@ if(process.argv[2] == "processing") {
 }
 
 if(process.argv[2] == "merge") {
-  ffmpegConcat(91, "m4v");
+  ffmpegConcat(81, "mp4");
 
   // testMerge()
   // ffmpegConcatByFilterConplex()
