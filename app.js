@@ -96,21 +96,52 @@ function ffmpegCutUp (path, outName, codec, startTIime, endTime) {
   .run();
 }
 
-function ffmpegConcat (path, length, codec) {
-  var res =  ffmpeg("0."+codec);
+/*grobal params .. mergeCount :int */
+function ffmpegConcat (length, codec) {
+  var res =  ffmpeg("10."+codec);
 
-  for (var i = 0; i < length; i++) {
+  for (var i = 11; i < length; i++) {
     res.input(i+"."+codec)
   }
-  
   res.on('error', function(err) {
     console.log('An error occurred: ' + err.message);
   })
   .on('end', function() {
     console.log('Merging finished !');
   })
-  .mergeToFile('merged.'+codec, path);
+  .mergeToFile('merged.m4v');
 }
+
+function testMerge() {
+  ffmpeg('85.m4v')
+  .input('86.m4v')
+  .input('87.m4v')
+  .input('88.m4v')
+  .input('89.m4v')
+  .input('90.m4v')
+  .input('91.m4v')
+  .on('error', function(err) {
+    console.log('An error occurred: ' + err.message);
+  })
+  .on('end', function() {
+    console.log('Merging finished !');
+  })
+  .mergeToFile('merged.m4v');
+}
+
+// function ffmpegConcatByFilterConplex () {
+//   var res =  ffmpeg("0.m4v");
+//   for (var i = 0; i < 104; i++) {
+//     res.input(i+".m4v")
+//   }
+//   res.complexFilter( {
+//       filter: '-filter_complex', 
+//       options: "concat=n=104:v=0:a=1"
+//     })
+//   .output('audio.wav')
+//   .run()
+// }
+
 
 /*
 // server console process
@@ -226,15 +257,16 @@ if(process.argv[2] == "processing") {
       });
     },
     function (callback) {
-      // console.log(faceDatas.length);
+      var seriesCallback = callback;
 
       var q = async.queue(function (task, done) {
         task.run();
-        done();
-      }, 5);
+        setTimeout(done, 1000);
+      }, 10);
 
       q.drain = function () {
         console.log('task is completed');
+        seriesCallback(null, "second")
       }
 
       for (var i = 0; i < faceDatas.length; i ++ ) {
@@ -251,8 +283,10 @@ if(process.argv[2] == "processing") {
         var self = this;
           ffmpegCutUp("public/media/nakamura_fix1.m4v", self.index, "m4v", self.facedata.start_time, self.facedata.end_time);    
       }
-
-      callback(null, "second");
+    }, 
+    function (callback) { 
+      // ffmpegConcat ("public/media/", faceDatas.length, "m4v");
+      callback(null, "third");
     }
   ], function (err, results) {
     if (err) {
@@ -260,5 +294,16 @@ if(process.argv[2] == "processing") {
     }
     console.log('series all done. ' + results);
   });  
-
 }
+
+if(process.argv[2] == "merge") {
+  ffmpegConcat(91, "m4v");
+
+  // testMerge()
+  // ffmpegConcatByFilterConplex()
+}
+
+
+// ffmpeg.ffprobe('media/sintel.mp4', function(err, metadata) {
+//     console.dir(metadata);
+// });
