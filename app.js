@@ -94,7 +94,11 @@ if(process.argv[2] == "nocapture") {
     });
 
     socket.on("senddata", function(facedata, emotiondata) {
+
+      // TODO getScore() : を使ってスコアが悪いときはそもそも音ださないようにしたい 
+
       if(fpsFlag == true) {
+
         //
         // CHECK: 今きってます！！！！！
         //
