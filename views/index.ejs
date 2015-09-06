@@ -96,15 +96,7 @@
         }
 
         function reserveSrc() {
-           if(getUrlVars()[0] == "movie2") {
-            cueing_at_movie2(6000, 7000);
-            cueing_at_movie2(41000, 8000);
-            cueing_at_movie2(75000, 10000);
-            cueing_at_movie2(114000, 3000);
-            return "/media/nakamura_fix2.m4v";
-          } else {
-            return "/media/nakamura_fix1.m4v";
-          }
+          return "/media/nakamura_fix1.m4v";
         }
         
         var insertAltVideo = function(video) {
@@ -163,31 +155,20 @@
           socketFlag = false;
           console.log("resstart");
 
-          if(getUrlVars()[0] == "movie2") {
-            location.href = "http://localhost:3000"
-          } else {
-            location.href = "http://localhost:3000?movie2"
-          }
+          // if(getUrlVars()[0] == "movie2") {
+          //   location.href = "http://localhost:3000"
+          // } else {
+          //   location.href = "http://localhost:3000?movie2"
+          // }
           
-
-
-          /*
-          if(vid.src == "http://localhost:3000/media/nakamura1.mov") {
-            vid.src = "http://localhost:3000/media/nakamura9.m4v";
-          } else {
-            location.href = "http://localhost:3000"
-            // vid.src == "http://localhost:3000/media/nakamura1.mov";
-          }
-          */
-
-          setTimeout( function() { 
-            vid.play();
-            setTimeout( function() { 
-              socket.emit("startflag");
-            }, 2000);
-          }, 4000);
+          // setTimeout( function() { 
+          //   vid.play();
+          //   setTimeout( function() { 
+          //     socket.emit("startflag");
+          //   }, 2000);
+          // }, 4000);
           
-          emotionSums = [0.0, 0.0, 0.0, 0.0];
+          // emotionSums = [0.0, 0.0, 0.0, 0.0];
         }, false);
 
         document.onkeydown = function (e){
@@ -203,21 +184,12 @@
           if(e.keyCode == 79) {
             ctrack.start(vid);
           }
-        };
-
-        /*------------ special cueing function super mad -----------*/
-
-        function cueing_at_movie2(stopTime, startTime) {
-          setTimeout(function() {
-            console.log("stopt!")
+          if(e.keyCode == 32) {
+            ctrack.reset();
             ctrack.stop(vid);
-            setTimeout(function() {
-              console.log("restart")
-              ctrack.start(vid);
-            }, startTime);
-          }, stopTime);
-        }
-
+            ctrack.start(vid);
+          }
+        };
         
         /*********** setup of emotion detection *************/
 
